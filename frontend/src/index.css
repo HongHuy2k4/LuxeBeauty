@@ -213,3 +213,62 @@
     }
   }
 }
+
+@media print {
+  /* Hide default browser headers/footers (URL, title, date, page numbers) */
+  @page {
+    margin: 0 !important;
+  }
+
+  /* Hide everything by default */
+  body {
+    visibility: hidden !important;
+    background: white !important;
+  }
+
+  /* Only show the invoice section and its children */
+  #printable-invoice,
+  #printable-invoice * {
+    visibility: visible !important;
+  }
+
+  /* Position and pad the printable section so it has clean margins on paper */
+  #printable-invoice {
+    position: absolute !important;
+    left: 15mm !important;
+    right: 15mm !important;
+    top: 15mm !important;
+    width: calc(100% - 30mm) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Completely hide non-printable components within the invoice */
+  .print-hidden,
+  .print-hidden * {
+    visibility: hidden !important;
+    display: none !important;
+  }
+
+  /* Convert grids to linear blocks for print page breaks */
+  .grid {
+    display: block !important;
+  }
+
+  .grid > * {
+    width: 100% !important;
+    margin-bottom: 20px !important;
+    page-break-inside: avoid !important;
+  }
+
+  .sticky {
+    position: static !important;
+  }
+
+  .card {
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    background: white !important;
+  }
+}

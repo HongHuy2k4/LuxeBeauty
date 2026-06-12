@@ -37,6 +37,7 @@ import { AppDispatch, RootState } from "@/stores";
 import DOMPurify from "dompurify";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSocket } from "@/contexts/SocketContext";
+import { useCart } from "@/contexts/CartContext";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("vi-VN", {
@@ -53,6 +54,8 @@ const ProductDetail = () => {
   const dispatch = useDispatch<AppDispatch>();
   const queryClient = useQueryClient();
   const { socket } = useSocket();
+  const { addItem } = useCart();
+  const [addingToCart, setAddingToCart] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -137,13 +140,15 @@ const ProductDetail = () => {
     setQuantity((prev) => Math.max(1, Math.min(10, prev + delta)));
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!currentProduct) return;
 
-    toast({
-      title: "Đã thêm vào giỏ hàng",
-      description: `${currentProduct.name} x ${quantity}`,
-    });
+    try {
+      setAddingToCart(true);
+      await addItem(currentProduct, quantity);
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   const handleSubmitReview = (e: React.FormEvent) => {
@@ -516,10 +521,10 @@ const ProductDetail = () => {
                     size="xl"
                     className="flex-1 gap-2"
                     onClick={handleAddToCart}
-                    disabled={product.stock <= 0}
+                    disabled={product.stock <= 0 || addingToCart}
                   >
                     <ShoppingBag className="w-5 h-5" />
-                    {product.stock > 0 ? "Thêm vào giỏ hàng" : "Hết hàng"}
+                    {addingToCart ? "Đang thêm..." : product.stock > 0 ? "Thêm vào giỏ hàng" : "Hết hàng"}
                   </Button>
                   <Button
                     variant={isWishlisted ? "rose" : "elegant-outline"}

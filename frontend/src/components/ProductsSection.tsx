@@ -2,8 +2,8 @@ import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeaturedProducts } from '@/hooks/useApi';
-import { addToCart } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/contexts/CartContext';
 import { useState } from 'react';
 
 const formatPrice = (price: number) => {
@@ -16,12 +16,13 @@ const formatPrice = (price: number) => {
 const ProductsSection = () => {
   const { toast } = useToast();
   const { data: products = [], isLoading, error } = useFeaturedProducts();
+  const { addItem } = useCart();
   const [addingToCart, setAddingToCart] = useState<number | null>(null);
 
-  const handleAddToCart = async (productId: number) => {
+  const handleAddToCart = async (product: any) => {
     try {
-      setAddingToCart(productId);
-      await addToCart(productId, 1);
+      setAddingToCart(product.id);
+      await addItem(product, 1);
       toast({
         title: "Thành công",
         description: "Sản phẩm đã được thêm vào giỏ hàng",
@@ -206,7 +207,7 @@ const ProductsSection = () => {
                   <Button 
                     variant="default" 
                     className="w-full gap-2 rounded-full shadow-elegant"
-                    onClick={() => handleAddToCart(product.id)}
+                    onClick={(e) => { e.preventDefault(); handleAddToCart(product); }}
                     disabled={addingToCart === product.id}
                   >
                     <ShoppingBag className="w-4 h-4" />

@@ -46,6 +46,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmationPage from "./pages/OrderConfirmationPage";
+import OrdersPage from "./pages/OrdersPage";
 
 
 const queryClient = new QueryClient();
@@ -74,7 +75,9 @@ const App = () => (
                       <Route path="/ho-tro" element={<SupportPage />} />
                       <Route path="/gio-hang" element={<CartPage />} />
                       <Route path="/thanh-toan" element={<CheckoutPage />} />
-                      <Route path="/xac-nhan-don-hang" element={<OrderConfirmationPage />} />
+                      <Route path="/don-hang/:orderNumber" element={<OrderConfirmationPage />} />
+                      <Route path="/orders" element={<OrdersPage />} />
+                      <Route path="/tai-khoan/don-hang" element={<OrdersPage />} />
                       {/* Admin Routes */}
                       <Route path="/admin" element={<AdminDashboard />} />
                       <Route path="/admin/orders" element={<AdminOrders />} />

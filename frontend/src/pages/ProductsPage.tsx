@@ -45,6 +45,7 @@ import {
   useBrands,
 } from "@/hooks/useApi";
 import type { Product } from "@/lib/api";
+import { useCart } from "@/contexts/CartContext";
 
 const priceRanges = [
   { label: "Dưới 500.000đ", min: 0, max: 500000 },
@@ -75,6 +76,18 @@ const ProductsPage = () => {
   const { data: categoriesData = [] } = useCategories();
   const { data: brandsData = [] } = useBrands();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { addItem } = useCart();
+  const [addingToCart, setAddingToCart] = useState<number | null>(null);
+
+  const handleAddToCart = async (e: React.MouseEvent, product: Product) => {
+    e.preventDefault();
+    try {
+      setAddingToCart(product.id);
+      await addItem(product, 1);
+    } finally {
+      setAddingToCart(null);
+    }
+  };
 
   const categoryParam = searchParams.get("category");
   const brandParam = searchParams.get("brand");
@@ -585,9 +598,11 @@ const ProductsPage = () => {
                                 <Button
                                   variant="default"
                                   className="w-full gap-2 rounded-full shadow-elegant"
+                                  onClick={(e) => handleAddToCart(e, product)}
+                                  disabled={addingToCart === product.id}
                                 >
                                   <ShoppingBag className="w-4 h-4" />
-                                  Thêm vào giỏ
+                                  {addingToCart === product.id ? 'Đang thêm...' : 'Thêm vào giỏ'}
                                 </Button>
                               </div>
                             )}
@@ -640,8 +655,13 @@ const ProductsPage = () => {
                             </div>
 
                             {viewMode === "list" && (
-                              <Button variant="elegant" className="mt-4 w-fit">
-                                Thêm vào giỏ
+                              <Button 
+                                variant="elegant" 
+                                className="mt-4 w-fit"
+                                onClick={(e) => handleAddToCart(e, product)}
+                                disabled={addingToCart === product.id}
+                              >
+                                {addingToCart === product.id ? 'Đang thêm...' : 'Thêm vào giỏ'}
                               </Button>
                             )}
                           </div>

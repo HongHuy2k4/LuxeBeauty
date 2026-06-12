@@ -22,9 +22,9 @@ axiosClient.interceptors.response.use(
   },
   (error) => {
     const { response } = error;
-    if (response.status === 401) {
+    if (response && response.status === 401) {
       localStorage.removeItem("token");
-    } else if (response.status === 404) {
+    } else if (response && response.status === 404) {
       //
     }
 

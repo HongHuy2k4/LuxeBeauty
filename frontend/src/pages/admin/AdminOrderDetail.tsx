@@ -357,7 +357,15 @@ const AdminOrderDetail = () => {
   };
 
   const handlePrint = () => {
+    const originalTitle = document.title;
+    document.title = " ";
+    
     window.print();
+    
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
+
     toast({
       title: t("adminOrderDetail.printInvoice"),
       description: t("adminOrderDetail.printInvoiceDesc"),
@@ -398,7 +406,7 @@ const AdminOrderDetail = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div id="printable-invoice" className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
@@ -406,6 +414,7 @@ const AdminOrderDetail = () => {
               variant="ghost"
               size="icon"
               onClick={() => navigate("/admin/orders")}
+              className="print-hidden"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -419,7 +428,7 @@ const AdminOrderDetail = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 print-hidden">
             <Button variant="outline" onClick={handlePrint}>
               <Printer className="h-4 w-4 mr-2" />
               {t("adminOrderDetail.print")}
@@ -440,11 +449,22 @@ const AdminOrderDetail = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <table className="w-full border-collapse border-none p-0 m-0 bg-transparent" style={{ borderSpacing: 0 }}>
+          <thead className="print:table-header-group hidden">
+            <tr>
+              <td className="p-0 m-0 border-none">
+                <div className="h-[15mm]"></div>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="p-0 m-0 border-none">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Status Update */}
-            <Card>
+            <Card className="print-hidden">
               <CardHeader>
                 <CardTitle>{t("adminOrderDetail.updateStatusTitle")}</CardTitle>
               </CardHeader>
@@ -624,6 +644,7 @@ const AdminOrderDetail = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsEditingNotes(true)}
+                      className="print-hidden"
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       {t("common.edit")}
@@ -744,8 +765,12 @@ const AdminOrderDetail = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
         {/* Delete Order Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

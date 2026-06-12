@@ -69,7 +69,7 @@ class ProductController extends Controller
         if ($priceMin !== null && $priceMin !== '') {
             $query->where('price', '>=', (float) $priceMin);
         }
-        if ($priceMax !== null && $priceMax !== '') {
+        if ($priceMax !== null && $priceMax !== '' && $priceMax !== 'Infinity') {
             $query->where('price', '<=', (float) $priceMax);
         }
 

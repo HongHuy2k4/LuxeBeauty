@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { axiosClient } from "@/axios/axiosClient";
 
 export interface User {
   id: number;
@@ -6,7 +7,7 @@ export interface User {
   email: string;
   phone?: string;
   avatar?: string;
-  role: "user" | "admin";
+  role?: "user" | "admin";
 }
 
 interface AuthContextType {
@@ -26,62 +27,66 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user từ localStorage khi app khởi động
+  // Load user từ API khi app khởi động nếu có token
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Error parsing stored user:", error);
-        localStorage.removeItem("user");
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const response = await axiosClient.get("/user");
+          if (response.data) {
+            setUser(response.data);
+          }
+        } catch (error) {
+          console.error("Error fetching user:", error);
+          localStorage.removeItem("token");
+          setUser(null);
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Giả lập API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Check nếu password là admin
-    const isAdminLogin = password === "12345678";
-
-    // Mock user data
-    const mockUser: User = {
-      id: isAdminLogin ? 999 : 1,
-      fullName: isAdminLogin ? "Admin" : "Lê Văn Xuân Hoàn",
-      email: email,
-      phone: isAdminLogin ? "0900000000" : "0912345678",
-      avatar: isAdminLogin 
-        ? "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin"
-        : "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-      role: isAdminLogin ? "admin" : "user",
-    };
-
-    setUser(mockUser);
-    localStorage.setItem("user", JSON.stringify(mockUser));
+    const response = await axiosClient.post("/login", { email, password });
+    if (response.data?.success) {
+      const { user, token } = response.data.data;
+      setUser(user);
+      localStorage.setItem("token", token);
+    } else {
+      throw new Error(response.data?.message || "Login failed");
+    }
   };
 
   const register = async (userData: Omit<User, "id" | "role">) => {
-    // Giả lập API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Mock user data with generated ID
-    const newUser: User = {
-      id: Date.now(),
-      ...userData,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.fullName}`,
-      role: "user",
-    };
-
-    setUser(newUser);
-    localStorage.setItem("user", JSON.stringify(newUser));
+    const response = await axiosClient.post("/register", {
+      name: userData.fullName,
+      email: userData.email,
+      password: (userData as any).password,
+      password_confirmation: (userData as any).password_confirmation,
+      phone: userData.phone
+    });
+    
+    if (response.data?.success) {
+      const { user, token } = response.data.data;
+      setUser(user);
+      localStorage.setItem("token", token);
+    } else {
+      throw new Error(response.data?.message || "Registration failed");
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      if (localStorage.getItem("token")) {
+        await axiosClient.post("/logout");
+      }
+    } catch (e) {
+      console.error(e);
+    }
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   const updateUser = (userData: Partial<User>) => {

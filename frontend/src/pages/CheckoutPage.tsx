@@ -1,5 +1,5 @@
 // frontend/src/pages/CheckoutPage.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -36,7 +36,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -60,15 +60,26 @@ const CheckoutPage = () => {
     clearCart,
   } = useCart();
 
+  // Helper to format phone number to have a leading zero if it has 9 digits and starts with a non-zero digit
+  const formatInitialPhone = (phone?: string | number) => {
+    if (!phone) return "";
+    const phoneStr = String(phone).trim();
+    if (phoneStr.length === 9 && /^[1-9][0-9]{8}$/.test(phoneStr)) {
+      return "0" + phoneStr;
+    }
+    return phoneStr;
+  };
+
   // Form states
-  const [shippingName, setShippingName] = useState(user?.name || "");
-  const [shippingPhone, setShippingPhone] = useState(user?.phone || "");
+  const [shippingName, setShippingName] = useState((user as any)?.name || user?.fullName || "");
+  const [shippingPhone, setShippingPhone] = useState(formatInitialPhone(user?.phone));
   const [shippingEmail, setShippingEmail] = useState(user?.email || "");
   const [shippingAddress, setShippingAddress] = useState("");
   const [shippingCity, setShippingCity] = useState("");
   const [shippingDistrict, setShippingDistrict] = useState("");
   const [shippingWard, setShippingWard] = useState("");
   const [notes, setNotes] = useState("");
+
 
   // Payment states
   const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -208,6 +219,16 @@ const CheckoutPage = () => {
       return false;
     }
 
+    if (!shippingWard.trim()) {
+      toast({
+        title: t("checkout.validationError") || "Thiếu thông tin",
+        description:
+          t("checkout.wardRequired") || "Vui lòng nhập phường/xã",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     if (items.length === 0) {
       toast({
         title: t("checkout.emptyCart") || "Giỏ hàng trống",
@@ -231,7 +252,10 @@ const CheckoutPage = () => {
         shipping_name: shippingName,
         shipping_phone: shippingPhone,
         shipping_email: shippingEmail,
-        shipping_address: `${shippingAddress}, ${shippingWard}, ${shippingDistrict}, ${shippingCity}`,
+        shipping_address: shippingAddress,
+        shipping_city: shippingCity,
+        shipping_district: shippingDistrict,
+        shipping_ward: shippingWard,
         payment_method: paymentMethod,
         notes: notes || undefined,
         shipping_fee: shippingFee,
@@ -269,11 +293,13 @@ const CheckoutPage = () => {
   };
 
   // Load user data on mount
+  const hasInitializedRef = useRef(false);
   useEffect(() => {
-    if (user) {
-      setShippingName(user.name || "");
-      setShippingPhone(user.phone || "");
+    if (user && !hasInitializedRef.current) {
+      setShippingName((user as any)?.name || user?.fullName || "");
+      setShippingPhone(formatInitialPhone(user.phone));
       setShippingEmail(user.email || "");
+      hasInitializedRef.current = true;
     }
   }, [user]);
 
@@ -440,7 +466,7 @@ const CheckoutPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ward">Phường/Xã</Label>
+                    <Label htmlFor="ward">Phường/Xã *</Label>
                     <Input
                       id="ward"
                       value={shippingWard}

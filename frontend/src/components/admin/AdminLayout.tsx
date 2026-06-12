@@ -114,9 +114,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               )}
             >
               {isSidebarOpen ? (
-                "Bella Admin"
+                "Luxe Admin"
               ) : (
-                <span className="hidden lg:inline">BA</span>
+                <span className="hidden lg:inline">LA</span>
               )}
             </Link>
           </div>

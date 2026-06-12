@@ -24,7 +24,7 @@ class StoreOrderRequest extends FormRequest
         return [
             'shipping_name' => 'required|string|min:2|max:50',
             'shipping_email' => 'required|email|max:255',
-            'shipping_phone' => 'required|string|regex:/^(0|\+84)[0-9]{9,10}$/',
+            'shipping_phone' => ['required', 'string', 'regex:/^(0|\+84)[0-9]{9,10}$/'],
             'shipping_address' => 'required|string|min:10|max:500',
             'shipping_city' => 'required|string|min:2|max:100',
             'shipping_district' => 'required|string|min:2|max:100',

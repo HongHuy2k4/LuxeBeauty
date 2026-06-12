@@ -320,6 +320,12 @@ const AdminDashboard = () => {
           icon: Clock,
           className: "bg-yellow-100 text-yellow-800",
         };
+      case "processing":
+        return {
+          label: t("orders.statusProcessing") || "Đang xử lý",
+          icon: Clock,
+          className: "bg-orange-100 text-orange-800",
+        };
       case "shipping":
       case "shipped":
         return {

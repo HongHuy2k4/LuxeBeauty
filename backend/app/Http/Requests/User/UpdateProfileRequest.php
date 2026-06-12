@@ -27,7 +27,7 @@ class UpdateProfileRequest extends FormRequest
         return [
             'name' => 'required|string|min:2|max:50',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|regex:/^(0|\+84)[0-9]{9,10}$/',
+            'phone' => ['nullable', 'string', 'regex:/^(0|\+84)[0-9]{9,10}$/'],
             'address' => 'nullable|string|max:500',
             'avatar' => 'nullable|string|max:500',
         ];

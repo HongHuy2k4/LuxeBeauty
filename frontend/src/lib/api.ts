@@ -568,6 +568,9 @@ export interface CreateOrderRequest {
   shipping_name: string;
   shipping_phone: string;
   shipping_address: string;
+  shipping_city: string;
+  shipping_district: string;
+  shipping_ward: string;
   shipping_email: string;
   payment_method?: string;
   notes?: string;
